@@ -1,4 +1,4 @@
-# Happy Chicken! 🐔
+# Happiness Is Chicken! 🐔
 
 A tiny, cheerful, browser game for little kids. Tap the screen (or press
 **Space**) and the chicken lays an egg. Lay enough eggs and they all hatch
@@ -7,6 +7,10 @@ ads, no accounts, no tracking. It runs entirely from this folder.
 
 All artwork is original inline SVG and all sounds are synthesized in the
 browser — there are no image, audio, or font files, and no third-party code.
+
+> **Private use only.** This is a home project for playing with the family
+> on our own network. Nothing here is for sale, and it is not intended to
+> be sold, published, or distributed.
 
 ## Quick start
 
@@ -36,7 +40,7 @@ python3 -m http.server 8080 --bind 0.0.0.0
 The `--bind 0.0.0.0` part is important — it makes the server listen on your
 network address, not just this computer, so phones and tablets can reach it.
 
-Then open **http://localhost:8080/happy-chicken.html** on the host computer
+Then open **http://localhost:8080/happiness-is-chicken.html** on the host computer
 to check it works.
 
 ## Playing from phones, tablets, and TVs
@@ -57,7 +61,7 @@ to check it works.
    ```
 
    for example `http://192.168.1.23:8080` — that redirects straight to the
-   game (`/happy-chicken.html`).
+   game (`/happiness-is-chicken.html`).
 
 Works in Chrome, Safari, Edge, Firefox, and Android/smart-TV browsers.
 
@@ -82,7 +86,7 @@ That's the whole game — it loops forever and there is no way to lose.
 - **Start over:** resets both counters and clears the screen. It asks
   "Yes / No" first so little fingers can't wipe the score by accident.
 - Power option: add `?hatch=N` to the URL (2–10), e.g.
-  `http://192.168.1.23:8080/happy-chicken.html?hatch=4`.
+  `http://192.168.1.23:8080/happiness-is-chicken.html?hatch=4`.
 - Defaults live at the top of `game.js` in the `CONFIG` object.
 
 Nothing is saved anywhere — closing the tab forgets everything, on purpose.
@@ -96,7 +100,7 @@ Nothing is saved anywhere — closing the tab forgets everything, on purpose.
    (turn Wi-Fi on and mobile data off to be sure), or a computer plugged
    into a different router.
 2. **Is the server actually up?** On the host, open
-   `http://localhost:8080/happy-chicken.html`. If that fails, restart the
+   `http://localhost:8080/happiness-is-chicken.html`. If that fails, restart the
    launch script and read its output.
 3. **Right IP?** IPs like `192.168.x.x`, `10.x.x.x`, or `172.16-31.x.x` are
    normal. If you see `127.0.0.1`, that's the computer itself — look again
@@ -128,7 +132,7 @@ instead use Share → *Add to Home Screen* for an app-like, chrome-free view.
 ## Project layout
 
 ```
-happy-chicken.html   the game page (open this one)
+happiness-is-chicken.html   the game page (open this one)
 style.css            looks, layout, animations
 game.js              game logic + synthesized sounds
 index.html           tiny redirect so http://LAN-IP:8080 just works
@@ -139,3 +143,12 @@ launch-lan.bat       Windows launcher (port 8080, binds 0.0.0.0)
 No build step, no dependencies, no telemetry, no storage. This is an
 original work — no copyrighted characters, artwork, music, or assets are
 used.
+
+## Intended use
+
+This project is for **private, personal use only** — a game for our own
+kids, served on our own home network.
+
+- Nothing in this folder is for sale.
+- It is not intended to be sold, offered for sale, or used commercially.
+- It is not intended for publication or distribution of any kind.

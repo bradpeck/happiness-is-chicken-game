@@ -1,4 +1,4 @@
-/* Happy Chicken! — a tiny egg-laying game for little kids.
+/* Happiness Is Chicken! — a tiny egg-laying game for little kids.
    Vanilla JavaScript. No dependencies, no storage, no network calls, no tracking.
    All sounds are synthesized with the Web Audio API; all art is inline SVG.
 

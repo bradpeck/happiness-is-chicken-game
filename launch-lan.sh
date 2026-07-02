@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Launch Happy Chicken! on the local network (Mac / Linux).
+# Launch Happiness Is Chicken! on the local network (Mac / Linux).
 # Serves this folder on 0.0.0.0:8080 so any device on the same Wi-Fi can play.
 set -u
 cd "$(dirname "$0")"
@@ -17,10 +17,10 @@ fi
 [ -z "$IP" ] && IP="YOUR-LAN-IP"
 
 echo ""
-echo "  🐔 Happy Chicken! is starting on port $PORT"
+echo "  🐔 Happiness Is Chicken! is starting on port $PORT"
 echo ""
-echo "  On this computer:   http://localhost:$PORT/happy-chicken.html"
-echo "  On other devices:   http://$IP:$PORT/happy-chicken.html"
+echo "  On this computer:   http://localhost:$PORT/happiness-is-chicken.html"
+echo "  On other devices:   http://$IP:$PORT/happiness-is-chicken.html"
 echo "                      (or just http://$IP:$PORT )"
 echo ""
 echo "  Everyone must be on the same Wi-Fi / home network."
