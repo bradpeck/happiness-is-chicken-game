@@ -11,7 +11,10 @@ browser — there are no image, audio, or font files, and no third-party code.
 My daughter saw the game on a TV show and misheard it and repeated it to me 
 as "Happiness Is Chicken" instead of what the actual name in the show is. 
 Since we don't want to have any rights issues - this is what this game is 
-called, and not that other "correct" name.
+called, and not that other "correct" name. This is also something like 95%
+vibe-coded, over a few iterations, just as she left the house for school
+today. Fable was available without usage credits, so I needed to make 
+something.
 
 > **Private use only.** This is a home project for playing with the family
 > on our own network. Nothing here is for sale, and it is not intended to
