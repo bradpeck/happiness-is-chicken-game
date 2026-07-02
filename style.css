@@ -1,4 +1,6 @@
-/* Happy Chicken! — styles. Original artwork, no external assets. */
+/* Happy Chicken! — styles. Original artwork, no external assets.
+   Look: flat bright-blue screen, thick dark outlines, no scenery —
+   like a simple in-show TV game. */
 
 * { box-sizing: border-box; }
 
@@ -16,101 +18,32 @@ body {
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
-  background: #8ed8f8;
+  background: #2BA6F2;
 }
 
 [hidden] { display: none !important; }
 
-/* ---------- stage & scenery ---------- */
+/* ---------- stage ---------- */
 
 #stage {
   position: fixed;
   inset: 0;
-  background: linear-gradient(#7fd0f5 0%, #b6e8fc 55%, #d8f4ff 74%);
+  background: #2BA6F2;
   touch-action: manipulation;
   cursor: pointer;
   overflow: hidden;
-}
-
-.sun {
-  position: absolute;
-  top: 5%;
-  right: 6%;
-  width: 14vmin;
-  height: 14vmin;
-  border-radius: 50%;
-  background: #ffe45e;
-  box-shadow: 0 0 8vmin 3vmin rgba(255, 228, 94, 0.55);
-  animation: sun-glow 5s ease-in-out infinite;
-}
-
-@keyframes sun-glow {
-  0%, 100% { box-shadow: 0 0 8vmin 3vmin rgba(255, 228, 94, 0.55); }
-  50%      { box-shadow: 0 0 10vmin 4vmin rgba(255, 228, 94, 0.7); }
-}
-
-.cloud {
-  position: absolute;
-  background: #ffffff;
-  border-radius: 100px;
-  opacity: 0.92;
-}
-.cloud::before, .cloud::after {
-  content: "";
-  position: absolute;
-  background: #ffffff;
-  border-radius: 50%;
-}
-.cloud-1 {
-  top: 10%;
-  width: 20vmin;
-  height: 6.5vmin;
-  animation: drift 65s linear infinite;
-  animation-delay: -18s;
-}
-.cloud-1::before { width: 9vmin; height: 9vmin; top: -4.5vmin; left: 3.5vmin; }
-.cloud-1::after  { width: 6.5vmin; height: 6.5vmin; top: -3vmin; left: 10.5vmin; }
-.cloud-2 {
-  top: 22%;
-  width: 15vmin;
-  height: 5vmin;
-  opacity: 0.8;
-  animation: drift 90s linear infinite;
-  animation-delay: -55s;
-}
-.cloud-2::before { width: 6.5vmin; height: 6.5vmin; top: -3.2vmin; left: 2.8vmin; }
-.cloud-2::after  { width: 5vmin; height: 5vmin; top: -2.2vmin; left: 8vmin; }
-
-@keyframes drift {
-  from { left: -25vw; }
-  to   { left: 105vw; }
-}
-
-.hill {
-  position: absolute;
-  border-radius: 50%;
-}
-.hill-1 { width: 70vw; height: 30vw; left: -15vw; bottom: 17%; background: #8fd168; }
-.hill-2 { width: 80vw; height: 34vw; right: -22vw; bottom: 15%; background: #7bc55a; }
-
-.grass {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 24%;
-  background: linear-gradient(#6fbe52, #59a83e);
-  border-top: 1.2vmin solid #7fca61;
 }
 
 /* ---------- chicken ---------- */
 
 #chicken {
   position: absolute;
-  left: 50%;
-  bottom: 12%;
-  width: clamp(140px, 36vmin, 300px);
+  left: 68%;
+  top: 34%;
+  width: clamp(110px, 26vmin, 220px);
   z-index: 2;
+  transform: translate(-50%, -50%);
+  transition: left 0.45s cubic-bezier(0.3, 1.3, 0.5, 1), top 0.45s cubic-bezier(0.3, 1.3, 0.5, 1);
   animation: bob 2.6s ease-in-out infinite;
   pointer-events: none;
 }
@@ -118,20 +51,20 @@ body {
   display: block;
   width: 100%;
   height: auto;
-  transform-origin: 50% 100%;
+  transform-origin: 50% 70%;
 }
 
 @keyframes bob {
-  0%, 100% { transform: translate(-50%, 0); }
-  50%      { transform: translate(-50%, -1.6vmin); }
+  0%, 100% { transform: translate(-50%, -50%); }
+  50%      { transform: translate(-50%, calc(-50% - 1.2vmin)); }
 }
 
-#chicken.lay svg { animation: lay-squat 0.38s ease-out; }
+#chicken.lay svg { animation: lay-squash 0.42s ease-out; }
 
-@keyframes lay-squat {
+@keyframes lay-squash {
   0%   { transform: scale(1, 1); }
-  30%  { transform: scale(1.08, 0.85); }
-  60%  { transform: scale(0.96, 1.08); }
+  30%  { transform: scale(1.12, 0.82); }
+  60%  { transform: scale(0.94, 1.1); }
   100% { transform: scale(1, 1); }
 }
 
@@ -141,18 +74,18 @@ body {
 
 #chicken .wing {
   transform-box: fill-box;
-  transform-origin: 85% 15%;
+  transform-origin: 15% 20%;
 }
 #chicken.flap .wing { animation: flap 0.7s ease-in-out; }
 
 @keyframes flap {
   0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-24deg); }
-  50% { transform: rotate(8deg); }
-  75% { transform: rotate(-18deg); }
+  25% { transform: rotate(26deg); }
+  50% { transform: rotate(-8deg); }
+  75% { transform: rotate(20deg); }
 }
 
-/* ---------- eggs, chicks, sparkles ---------- */
+/* ---------- eggs, hatchlings, sparkles ---------- */
 
 #egg-layer, #chick-layer, #fx-layer {
   position: absolute;
@@ -165,12 +98,10 @@ body {
 
 .egg {
   position: absolute;
-  width: clamp(36px, 7.5vmin, 64px);
+  width: clamp(38px, 8vmin, 68px);
   transform: translate(-50%, -50%);
-  transition: left 0.45s cubic-bezier(0.25, 1.4, 0.45, 1), top 0.45s cubic-bezier(0.25, 1.4, 0.45, 1);
-  filter: drop-shadow(0 0.4vmin 0.4vmin rgba(0, 0, 0, 0.18));
 }
-.egg svg, .chick svg { display: block; width: 100%; height: auto; }
+.egg svg, .hatchling svg, .shell-top svg { display: block; width: 100%; height: auto; }
 
 .egg.pop svg { animation: pop-in 0.32s ease-out; }
 .egg svg { transform-origin: 50% 100%; }
@@ -192,28 +123,41 @@ body {
   80% { transform: rotate(8deg); }
 }
 
-.chick {
+/* a chick sitting in its cracked shell */
+.hatchling {
   position: absolute;
-  width: clamp(44px, 9vmin, 76px);
+  width: clamp(52px, 11vmin, 92px);
   transform: translate(-50%, -50%);
-  filter: drop-shadow(0 0.4vmin 0.4vmin rgba(0, 0, 0, 0.18));
 }
-.chick.face-left { transform: translate(-50%, -50%) scaleX(-1); }
+.hatchling svg { transform-origin: 50% 90%; }
+.hatchling.pop svg { animation: pop-in 0.32s ease-out; }
+.hatchling.bounce svg { animation: chick-bounce 0.9s ease-in-out 0.35s 2; }
+.hatchling.fade { animation: fade-away 0.5s ease-out forwards; }
 
-.chick.pop svg { animation: pop-in 0.32s ease-out; }
-.chick svg { transform-origin: 50% 100%; }
-.chick.hop svg { animation: hop 0.5s ease-in-out 2; }
-.chick.walk svg { animation: waddle 0.45s ease-in-out infinite; }
-
-@keyframes hop {
-  0%, 100% { transform: translateY(0) scale(1, 1); }
-  30%  { transform: translateY(-38%) scale(0.95, 1.06); }
-  60%  { transform: translateY(0) scale(1.06, 0.92); }
+@keyframes chick-bounce {
+  0%, 100% { transform: scale(1, 1); }
+  30% { transform: scale(1.05, 0.92); }
+  65% { transform: scale(0.96, 1.06); }
 }
 
-@keyframes waddle {
-  0%, 100% { transform: rotate(-7deg); }
-  50%      { transform: rotate(7deg); }
+@keyframes fade-away {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* the empty top of the shell, popping off */
+.shell-top {
+  position: absolute;
+  width: clamp(24px, 5vmin, 42px);
+  animation: shell-fly 0.7s ease-out forwards;
+}
+
+@keyframes shell-fly {
+  from { transform: translate(-50%, -50%) rotate(0deg); opacity: 1; }
+  to {
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(160deg);
+    opacity: 0;
+  }
 }
 
 .spark {
@@ -221,8 +165,8 @@ body {
   width: 1.6vmin;
   height: 1.6vmin;
   border-radius: 50%;
-  background: #fff6c9;
-  border: 0.3vmin solid #ffd34d;
+  background: #FFF6C9;
+  border: 0.3vmin solid #FFE23F;
   animation: spark-fly 0.65s ease-out forwards;
 }
 
@@ -234,12 +178,12 @@ body {
   }
 }
 
-/* ---------- HUD counters ---------- */
+/* ---------- HUD counters (show-style: blue pills, big white digits, top-right) ---------- */
 
 .hud {
   position: absolute;
   top: max(2vmin, env(safe-area-inset-top));
-  left: max(2vmin, env(safe-area-inset-left));
+  right: max(2vmin, env(safe-area-inset-right));
   display: flex;
   gap: 1.5vmin;
   z-index: 10;
@@ -248,16 +192,16 @@ body {
 .pill {
   display: flex;
   align-items: center;
-  gap: 0.4em;
-  background: rgba(255, 255, 255, 0.92);
+  gap: 0.35em;
+  background: rgba(9, 84, 165, 0.5);
   border-radius: 999px;
-  padding: 0.25em 0.75em 0.25em 0.5em;
-  font-size: clamp(20px, 4.5vmin, 36px);
+  padding: 0.22em 0.7em 0.22em 0.5em;
+  font-size: clamp(22px, 5vmin, 40px);
   font-weight: 700;
-  color: #4a3b2a;
-  box-shadow: 0 0.4vmin 1vmin rgba(0, 0, 0, 0.15);
+  color: #ffffff;
+  letter-spacing: 0.04em;
 }
-.pill .hud-icon { width: 1.15em; height: 1.15em; }
+.pill .hud-icon { width: 1em; height: 1em; }
 .pill.bump { animation: bump 0.3s ease-out; }
 
 @keyframes bump {
@@ -266,12 +210,12 @@ body {
   100% { transform: scale(1); }
 }
 
-/* ---------- buttons ---------- */
+/* ---------- buttons (top-left) ---------- */
 
 .controls {
   position: absolute;
   top: max(2vmin, env(safe-area-inset-top));
-  right: max(2vmin, env(safe-area-inset-right));
+  left: max(2vmin, env(safe-area-inset-left));
   display: flex;
   gap: 1.5vmin;
   z-index: 10;
@@ -286,17 +230,16 @@ button {
   width: clamp(48px, 9.5vmin, 64px);
   height: clamp(48px, 9.5vmin, 64px);
   border-radius: 50%;
-  border: 0.4vmin solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.92);
+  border: none;
+  background: rgba(255, 255, 255, 0.85);
   font-size: clamp(22px, 4.5vmin, 30px);
   line-height: 1;
-  box-shadow: 0 0.4vmin 1vmin rgba(0, 0, 0, 0.15);
   transition: transform 0.1s ease-out;
 }
 .controls button:active { transform: scale(0.9); }
 
 button:focus-visible {
-  outline: 4px solid #1d4ed8;
+  outline: 4px solid #ffffff;
   outline-offset: 3px;
 }
 
@@ -308,7 +251,7 @@ button:focus-visible {
   z-index: 20;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(43, 166, 242, 0.55);
   cursor: pointer;
   transition: opacity 0.35s ease-out;
 }
@@ -316,25 +259,24 @@ button:focus-visible {
 
 .start-card {
   text-align: center;
-  background: rgba(255, 255, 255, 0.95);
-  border: 0.8vmin solid #ffd34d;
+  background: #ffffff;
+  border: 0.8vmin solid #3A3126;
   border-radius: 4vmin;
   padding: 5vmin 8vmin;
-  box-shadow: 0 1vmin 3vmin rgba(0, 0, 0, 0.2);
   max-width: 90vw;
 }
 
 .start-card h1 {
   margin: 0 0 2vmin;
   font-size: clamp(34px, 9vmin, 72px);
-  color: #e5484d;
+  color: #DE3244;
   letter-spacing: 0.02em;
 }
 
 .start-hint {
   margin: 0;
   font-size: clamp(22px, 5vmin, 40px);
-  color: #4a3b2a;
+  color: #3A3126;
   animation: pulse 1.4s ease-in-out infinite;
 }
 .start-hint-small {
@@ -373,7 +315,7 @@ button:focus-visible {
   padding: 24px 28px;
   width: min(88vw, 420px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-  color: #4a3b2a;
+  color: #3A3126;
 }
 
 .settings-card h2 {
@@ -412,12 +354,12 @@ button:focus-visible {
   background: #faf7ef;
   font-size: 20px;
   font-weight: 700;
-  color: #4a3b2a;
+  color: #3A3126;
   padding: 0 14px;
 }
 .threshold-btn.active {
-  background: #ffd34d;
-  border-color: #efaf17;
+  background: #FFE23F;
+  border-color: #3A3126;
 }
 #reset-yes { background: #d3f2c9; border-color: #6fbe52; }
-#reset-no  { background: #ffd9d9; border-color: #e5484d; }
+#reset-no  { background: #ffd9d9; border-color: #DE3244; }

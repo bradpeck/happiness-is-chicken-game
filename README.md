@@ -63,11 +63,12 @@ Works in Chrome, Safari, Edge, Firefox, and Android/smart-TV browsers.
 
 ## How to play
 
-- **Tap anywhere** (or press **Space**) → the chicken lays an egg. 🥚
-- Lay **5 eggs** (configurable) → they wobble, crack, and hatch into chicks
-  that waddle away. 🐤
-- The counters in the top-left show total eggs laid and chicks hatched.
-- Top-right buttons: **🔊 sound on/off**, **⛶ fullscreen**, **⚙️ grown-ups**.
+- **Tap anywhere** (or press **Space**) → the chicken lays an egg where she
+  is, then hops to a new spot, scattering eggs all over the screen. 🥚
+- Lay **5 eggs** (configurable) → they wobble, crack open, and little chicks
+  pop up sitting in their shells. 🐤
+- The counters in the top-right show total eggs laid and chicks hatched.
+- Top-left buttons: **🔊 sound on/off**, **⛶ fullscreen**, **⚙️ grown-ups**.
 
 That's the whole game — it loops forever and there is no way to lose.
 

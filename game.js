@@ -1,18 +1,21 @@
 /* Happy Chicken! — a tiny egg-laying game for little kids.
    Vanilla JavaScript. No dependencies, no storage, no network calls, no tracking.
-   All sounds are synthesized with the Web Audio API; all art is inline SVG. */
+   All sounds are synthesized with the Web Audio API; all art is inline SVG.
+
+   The feel: a flat blue screen. Each press, the chicken lays an egg where she
+   is and hops to a new random spot, so eggs scatter across the whole screen.
+   Every N eggs, the batch hatches into chicks sitting in their cracked shells. */
 
 'use strict';
 
 // ---------------------------------------------------------------- config
 
 const CONFIG = {
-  hatchThreshold: 5,   // eggs laid before the batch hatches (2-10)
-  hatchStaggerMs: 260, // delay between each egg in a batch hatching
-  eggSettleMs: 450,    // time an egg takes to roll to its resting spot
-  chickHopMs: 1300,    // chick celebration hops before walking away
-  chickWalkMs: 5200,   // time for a chick to waddle off screen
-  layCooldownMs: 90,   // debounce so multi-touch still feels good
+  hatchThreshold: 5,    // eggs laid before the batch hatches (2-10)
+  hatchStaggerMs: 260,  // delay between each egg in a batch hatching
+  hatchlingStayMs: 2600,// how long a hatched chick sits in its shell
+  layCooldownMs: 90,    // debounce so multi-touch still feels good
+  hopArea: { minX: 14, maxX: 86, minY: 24, maxY: 72 }, // % of screen the chicken roams
 };
 
 // Allow ?hatch=N in the URL for a quick override without editing files.
@@ -32,6 +35,8 @@ const state = {
   lastLayAt: 0,
   batchEggs: [],   // egg elements in the current (unhatched) batch
   generation: 0,   // bumped on reset so stale timers do nothing
+  chickenX: 68,    // chicken position in stage %
+  chickenY: 34,
 };
 
 // ---------------------------------------------------------------- dom
@@ -59,28 +64,33 @@ const thresholdBtns = Array.from(document.querySelectorAll('.threshold-btn'));
 
 // ---------------------------------------------------------------- art
 
+const OUTLINE = '#3A3126';
+
 const EGG_SVG = `
 <svg viewBox="0 0 60 74">
   <path d="M30 4C13 4 4 26 4 44a26 26 0 0 0 52 0C56 26 47 4 30 4Z"
-        fill="#FFFDF7" stroke="#E3DCCB" stroke-width="3"/>
-  <ellipse cx="21" cy="26" rx="6" ry="9" fill="#FFFFFF"/>
+        fill="#F7F2BC" stroke="${OUTLINE}" stroke-width="5"/>
   <path class="crack" d="M16 40 l8 6 -6 7 9 5 -4 8"
-        stroke="#C9BFA8" stroke-width="3" fill="none" stroke-linecap="round"/>
+        stroke="${OUTLINE}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
 </svg>`;
 
-const CHICK_SVG = `
-<svg viewBox="0 0 90 100">
-  <g stroke="#F79D2C" stroke-width="5" stroke-linecap="round" fill="none">
-    <path d="M36 78 v13 M36 91 l-7 5 M36 91 l7 5"/>
-    <path d="M56 78 v13 M56 91 l-7 5 M56 91 l7 5"/>
-  </g>
-  <path d="M38 20 q3 -10 9 -3 q6 -8 10 2" stroke="#EFC93D" stroke-width="4"
-        fill="none" stroke-linecap="round"/>
-  <circle cx="46" cy="48" r="32" fill="#FFE45E" stroke="#EFC93D" stroke-width="3"/>
-  <ellipse cx="26" cy="55" rx="12" ry="9" fill="#F8D43C"/>
-  <path d="M74 44 l14 6 -14 7 z" fill="#F79D2C"/>
-  <circle cx="62" cy="40" r="4.5" fill="#33302A"/>
-  <circle cx="63.5" cy="38.5" r="1.5" fill="#FFFFFF"/>
+// a chick sitting inside the cracked bottom half of its egg
+const HATCHLING_SVG = `
+<svg viewBox="0 0 120 132">
+  <path d="M48 32 C46 18 60 14 63 26 C68 15 80 20 76 32 C67 27 56 27 48 32 Z"
+        fill="#DE3244" stroke="${OUTLINE}" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="60" cy="58" r="31" fill="#FFE23F" stroke="${OUTLINE}" stroke-width="5.5"/>
+  <path d="M33 54 L15 61 L34 68 Z" fill="#FFC93C" stroke="${OUTLINE}" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="45" cy="52" r="4.5" fill="${OUTLINE}"/>
+  <path d="M24 80 L36 68 L48 80 L60 68 L72 80 L84 68 L96 80 A36 34 0 0 1 24 80 Z"
+        fill="#F7F2BC" stroke="${OUTLINE}" stroke-width="5" stroke-linejoin="round"/>
+</svg>`;
+
+// the empty top of the shell, flung off as the egg opens
+const SHELL_TOP_SVG = `
+<svg viewBox="0 0 70 62">
+  <path d="M10 42 L20 28 L30 42 L40 28 L50 42 A20 18 0 0 1 10 42 Z"
+        fill="#F7F2BC" stroke="${OUTLINE}" stroke-width="5" stroke-linejoin="round"/>
 </svg>`;
 
 // ---------------------------------------------------------------- audio
@@ -159,8 +169,8 @@ const AudioFX = {
 // ---------------------------------------------------------------- hud
 
 function updateHud() {
-  eggCountEl.textContent = state.totalEggsLaid;
-  chickCountEl.textContent = state.totalChicksHatched;
+  eggCountEl.textContent = String(state.totalEggsLaid).padStart(3, '0');
+  chickCountEl.textContent = String(state.totalChicksHatched).padStart(3, '0');
 }
 
 function bumpPill(pill) {
@@ -171,23 +181,20 @@ function bumpPill(pill) {
 
 // ---------------------------------------------------------------- gameplay
 
-// Point (in stage %) just under the chicken, where eggs appear.
-function chickenSpot() {
-  const s = stage.getBoundingClientRect();
-  const c = chickenEl.getBoundingClientRect();
-  return {
-    x: ((c.left + c.width * 0.45) - s.left) / s.width * 100,
-    y: ((c.top + c.height * 0.9) - s.top) / s.height * 100,
-  };
-}
-
-// Resting spot on the grass for the i-th egg of a batch.
-function slotFor(i) {
-  const n = state.hatchThreshold;
-  return {
-    x: 10 + ((i + 0.5) / n) * 80 + (Math.random() * 4 - 2),
-    y: 79 + Math.random() * 9,
-  };
+// Hop the chicken to a new random spot (both axes — she roams the whole screen).
+function hopChicken() {
+  const a = CONFIG.hopArea;
+  // Keep each hop a decent jump so it always reads as movement.
+  let x, y, tries = 0;
+  do {
+    x = a.minX + Math.random() * (a.maxX - a.minX);
+    y = a.minY + Math.random() * (a.maxY - a.minY);
+    tries += 1;
+  } while (tries < 8 && Math.hypot(x - state.chickenX, y - state.chickenY) < 18);
+  state.chickenX = x;
+  state.chickenY = y;
+  chickenEl.style.left = x + '%';
+  chickenEl.style.top = y + '%';
 }
 
 function layEgg() {
@@ -196,27 +203,24 @@ function layEgg() {
   state.lastLayAt = now;
 
   state.totalEggsLaid += 1;
-  const index = state.eggsInCurrentBatch;
   state.eggsInCurrentBatch += 1;
 
   chickenEl.classList.remove('lay');
   void chickenEl.offsetWidth;
   chickenEl.classList.add('lay');
-  setTimeout(() => chickenEl.classList.remove('lay'), 420);
+  setTimeout(() => chickenEl.classList.remove('lay'), 460);
 
+  // The egg appears just under where the chicken is right now...
   const egg = document.createElement('div');
   egg.className = 'egg pop';
   egg.innerHTML = EGG_SVG;
-  const start = chickenSpot();
-  egg.style.left = start.x + '%';
-  egg.style.top = start.y + '%';
+  egg.style.left = state.chickenX + '%';
+  egg.style.top = Math.min(state.chickenY + 9, 92) + '%';
+  egg.style.transform = 'translate(-50%, -50%) rotate(' + (Math.random() * 20 - 10).toFixed(1) + 'deg)';
   eggLayer.appendChild(egg);
 
-  const slot = slotFor(index);
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    egg.style.left = slot.x + '%';
-    egg.style.top = slot.y + '%';
-  }));
+  // ...and she hops away to a fresh spot, leaving eggs scattered behind.
+  hopChicken();
 
   state.batchEggs.push(egg);
   AudioFX.lay();
@@ -228,7 +232,7 @@ function layEgg() {
     state.batchEggs = [];
     state.eggsInCurrentBatch = 0; // next taps start a fresh batch right away
     const gen = state.generation;
-    setTimeout(() => hatchBatch(eggs, gen), CONFIG.eggSettleMs + 250);
+    setTimeout(() => hatchBatch(eggs, gen), 600);
   }
 }
 
@@ -247,7 +251,8 @@ function hatchBatch(eggs, gen) {
           const y = parseFloat(egg.style.top);
           egg.remove();
           spawnSparks(x, y);
-          spawnChick(x, y, gen);
+          spawnShellTop(x, y);
+          spawnHatchling(x, y, gen);
           state.totalChicksHatched += 1;
           AudioFX.cheep();
           updateHud();
@@ -258,24 +263,33 @@ function hatchBatch(eggs, gen) {
   });
 }
 
-function spawnChick(x, y, gen) {
+// A chick pops up sitting in its cracked shell, bounces, then fades away.
+function spawnHatchling(x, y, gen) {
   const chick = document.createElement('div');
-  chick.className = 'chick pop hop';
-  chick.innerHTML = CHICK_SVG;
+  chick.className = 'hatchling pop bounce';
+  chick.innerHTML = HATCHLING_SVG;
   chick.style.left = x + '%';
   chick.style.top = y + '%';
-  const exitX = x < 50 ? -12 : 112; // waddle off the nearest edge
-  if (exitX < x) chick.classList.add('face-left');
   chickLayer.appendChild(chick);
 
   setTimeout(() => {
     if (gen !== state.generation) { chick.remove(); return; }
-    chick.classList.remove('hop');
-    chick.classList.add('walk');
-    chick.style.transition = 'left ' + CONFIG.chickWalkMs + 'ms linear';
-    requestAnimationFrame(() => { chick.style.left = exitX + '%'; });
-    setTimeout(() => chick.remove(), CONFIG.chickWalkMs + 400);
-  }, CONFIG.chickHopMs);
+    chick.classList.add('fade');
+    setTimeout(() => chick.remove(), 550);
+  }, CONFIG.hatchlingStayMs);
+}
+
+function spawnShellTop(x, y) {
+  const shell = document.createElement('div');
+  shell.className = 'shell-top';
+  shell.innerHTML = SHELL_TOP_SVG;
+  shell.style.left = x + '%';
+  shell.style.top = y + '%';
+  const dir = Math.random() < 0.5 ? -1 : 1;
+  shell.style.setProperty('--dx', (dir * (34 + Math.random() * 26)) + 'px');
+  shell.style.setProperty('--dy', (-40 - Math.random() * 24) + 'px');
+  fxLayer.appendChild(shell);
+  setTimeout(() => shell.remove(), 750);
 }
 
 function spawnSparks(x, y) {
@@ -442,6 +456,15 @@ function scheduleFlap() {
   }, 7000 + Math.random() * 8000);
 }
 
+// The screen stays alive: every so often the chicken takes a little hop
+// on her own (no egg — eggs only come from presses).
+function scheduleIdleHop() {
+  setTimeout(() => {
+    if (state.started && !state.paused) hopChicken();
+    scheduleIdleHop();
+  }, 9000 + Math.random() * 9000);
+}
+
 // ---------------------------------------------------------------- go!
 
 thresholdBtns.forEach((b) => {
@@ -450,3 +473,4 @@ thresholdBtns.forEach((b) => {
 updateHud();
 scheduleBlink();
 scheduleFlap();
+scheduleIdleHop();
