@@ -4,6 +4,10 @@
 
 * { box-sizing: border-box; }
 
+/* The game is a bright sunny screen on every device: opt out of
+   forced/auto dark mode, which inverts the artwork's colors. */
+:root { color-scheme: only light; }
+
 html, body {
   margin: 0;
   padding: 0;

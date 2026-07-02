@@ -222,11 +222,29 @@ const AudioFX = {
   peep() {  // one tiny chirp for the peep-jumps
     this.tone(1700 + Math.random() * 400, 2200, 0.06, 'sine', 0.12, 0);
   },
-  fanfare() { // milestone!
-    this.tone(523, 523, 0.09, 'triangle', 0.2, 0);
-    this.tone(659, 659, 0.09, 'triangle', 0.2, 0.1);
-    this.tone(784, 784, 0.09, 'triangle', 0.2, 0.2);
-    this.tone(1047, 1047, 0.22, 'triangle', 0.24, 0.3);
+  // A happy little original song for golden-egg hatches (~3s):
+  // a bouncy melody with a soft bass line, ending on two chick cheeps.
+  song() {
+    const B = 0.14; // one beat, in seconds
+    // [frequency, startBeat, lengthBeats]
+    const MELODY = [
+      [523, 0, 1], [659, 1, 1], [784, 2, 1], [1047, 3, 2],   // do mi so DO!
+      [880, 5, 1], [1047, 6, 1], [784, 7, 2],                // la DO so~
+      [698, 9, 1], [880, 10, 1], [784, 11, 1], [659, 12, 2], // fa la so mi~
+      [587, 14, 1], [659, 15, 1], [523, 16, 2.5],            // re mi do~
+    ];
+    const BASS = [
+      [262, 0, 1.5], [196, 4, 1.5], [175, 9, 1.5], [196, 12, 1.5], [262, 16, 2],
+    ];
+    MELODY.forEach(([f, at, len]) => {
+      this.tone(f, f, len * B * 0.9, 'triangle', 0.2, at * B);
+    });
+    BASS.forEach(([f, at, len]) => {
+      this.tone(f, f, len * B * 0.9, 'sine', 0.12, at * B);
+    });
+    // two proud little cheeps to finish
+    this.tone(1600, 2100, 0.06, 'sine', 0.14, 19 * B);
+    this.tone(1800, 2300, 0.06, 'sine', 0.14, 20 * B);
   },
 };
 
@@ -273,7 +291,7 @@ function showTierBanner(tier, gen) {
     if (gen !== state.generation) return;
     tierBanner.classList.add('hide');
     setTimeout(() => { tierBanner.hidden = true; }, 550);
-  }, 2600);
+  }, 3100); // banner stays up for the length of the milestone song
 }
 
 function celebrateTier(tier, x, y, gen) {
@@ -282,7 +300,7 @@ function celebrateTier(tier, x, y, gen) {
   showTierBanner(tier, gen);
   spawnSparks(x, y, tier.color);
   spawnSparks(x, y, '#FFFFFF');
-  AudioFX.fanfare();
+  AudioFX.song();
 }
 
 // ---------------------------------------------------------------- gameplay
