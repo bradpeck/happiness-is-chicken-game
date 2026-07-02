@@ -8,6 +8,11 @@ ads, no accounts, no tracking. It runs entirely from this folder.
 All artwork is original inline SVG and all sounds are synthesized in the
 browser — there are no image, audio, or font files, and no third-party code.
 
+My daughter saw the game on a TV show and misheard it and repeated it to me 
+as "Happiness Is Chicken" instead of what the actual name in the show is. 
+Since we don't want to have any rights issues - this is what this game is 
+called, and not that other "correct" name.
+
 > **Private use only.** This is a home project for playing with the family
 > on our own network. Nothing here is for sale, and it is not intended to
 > be sold, published, or distributed.
@@ -72,9 +77,10 @@ Works in Chrome, Safari, Edge, Firefox, and Android/smart-TV browsers.
 - Lay **5 eggs** (configurable) → they wobble, crack open, and little chicks
   pop up in their shells, leap out, and peep-jump off the screen flapping
   their tiny wings. 🐤
-- **Milestones:** the 10th, 50th, 100th, 250th, 500th, and 1000th egg is a
-  sparkling golden egg that hatches a neon-colored chick, with a matching
-  banner — collect all six on the left side of the screen. ⭐
+- **Milestones:** the 10th, 25th, 50th, 75th, 100th, 150th, 250th, 500th,
+  and 1000th egg is a sparkling golden egg that hatches a neon-colored
+  chick, with a matching banner — collect all nine on the left side of the
+  screen. ⭐
 - The counters in the top-right show total eggs laid and chicks hatched.
 - Top-left buttons: **🔊 sound on/off**, **⛶ fullscreen**, **⚙️ grown-ups**.
 

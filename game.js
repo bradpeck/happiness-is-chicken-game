@@ -29,8 +29,11 @@ const CONFIG = {
 // Nth egg laid is always the Nth chick hatched.
 const TIERS = [
   { n: 10,   color: '#3BFF3B' }, // neon green
+  { n: 25,   color: '#FFB700' }, // sunny yellow
   { n: 50,   color: '#FF4FD8' }, // neon pink
+  { n: 75,   color: '#00D7FF' }, // bright cyan
   { n: 100,  color: '#FFA51E' }, // neon orange
+  { n: 150,  color: '#FF6B6B' }, // coral red
   { n: 250,  color: '#B44BFF' }, // neon purple
   { n: 500,  color: '#25F0DC' }, // neon aqua
   { n: 1000, color: '#2E5BFF' }, // electric blue
