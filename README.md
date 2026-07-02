@@ -1,4 +1,4 @@
-# Happy Chicken! 🐔
+# Happiness Is Chicken! 🐔
 
 A tiny, cheerful, browser game for little kids. Tap the screen (or press
 **Space**) and the chicken lays an egg. Lay enough eggs and they all hatch
@@ -7,6 +7,11 @@ ads, no accounts, no tracking. It runs entirely from this folder.
 
 All artwork is original inline SVG and all sounds are synthesized in the
 browser — there are no image, audio, or font files, and no third-party code.
+
+My daughter saw the game on a TV show and misheard it and repeated it to me 
+as "Happiness Is Chicken" instead of what the actual name in the show is. 
+Since we don't want to have any rights issues - this is what this game is 
+called, and not that other "correct" name.
 
 ## Quick start
 
