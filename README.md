@@ -66,7 +66,11 @@ Works in Chrome, Safari, Edge, Firefox, and Android/smart-TV browsers.
 - **Tap anywhere** (or press **Space**) → the chicken lays an egg where she
   is, then hops to a new spot, scattering eggs all over the screen. 🥚
 - Lay **5 eggs** (configurable) → they wobble, crack open, and little chicks
-  pop up sitting in their shells. 🐤
+  pop up in their shells, leap out, and peep-jump off the screen flapping
+  their tiny wings. 🐤
+- **Milestones:** the 10th, 50th, 100th, 250th, 500th, and 1000th egg is a
+  sparkling golden egg that hatches a neon-colored chick, with a matching
+  banner — collect all six on the left side of the screen. ⭐
 - The counters in the top-right show total eggs laid and chicks hatched.
 - Top-left buttons: **🔊 sound on/off**, **⛶ fullscreen**, **⚙️ grown-ups**.
 

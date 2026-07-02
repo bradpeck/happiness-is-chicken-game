@@ -4,7 +4,12 @@
 
    The feel: a flat blue screen. Each press, the chicken lays an egg where she
    is and hops to a new random spot, so eggs scatter across the whole screen.
-   Every N eggs, the batch hatches into chicks sitting in their cracked shells. */
+   Every N eggs, the batch hatches: each chick leaps out of its shell, does
+   tiny peep-jumps across the screen flapping its wings, and hops off stage.
+
+   Milestones: the 10th, 50th, 100th, 250th, 500th and 1000th egg is golden
+   and hatches a neon-colored chick, announced with a banner and collected
+   as a badge on the left side of the screen. */
 
 'use strict';
 
@@ -13,10 +18,23 @@
 const CONFIG = {
   hatchThreshold: 5,    // eggs laid before the batch hatches (2-10)
   hatchStaggerMs: 260,  // delay between each egg in a batch hatching
-  hatchlingStayMs: 2600,// how long a hatched chick sits in its shell
+  sitInShellMs: 950,    // how long a hatched chick sits in its shell
+  journeyMsPerPct: 55,  // peep-jump speed: ms per % of screen crossed
   layCooldownMs: 90,    // debounce so multi-touch still feels good
   hopArea: { minX: 14, maxX: 86, minY: 24, maxY: 72 }, // % of screen the chicken roams
 };
+
+// Milestone tiers: hatch this many chicks, get a golden egg whose chick
+// is a neon color. Every egg hatches in the order it was laid, so the
+// Nth egg laid is always the Nth chick hatched.
+const TIERS = [
+  { n: 10,   color: '#3BFF3B' }, // neon green
+  { n: 50,   color: '#FF4FD8' }, // neon pink
+  { n: 100,  color: '#FFA51E' }, // neon orange
+  { n: 250,  color: '#B44BFF' }, // neon purple
+  { n: 500,  color: '#25F0DC' }, // neon aqua
+  { n: 1000, color: '#2E5BFF' }, // electric blue
+];
 
 // Allow ?hatch=N in the URL for a quick override without editing files.
 const urlHatch = parseInt(new URLSearchParams(location.search).get('hatch'), 10);
@@ -37,6 +55,7 @@ const state = {
   generation: 0,   // bumped on reset so stale timers do nothing
   chickenX: 68,    // chicken position in stage %
   chickenY: 34,
+  earnedTiers: new Set(),
 };
 
 // ---------------------------------------------------------------- dom
@@ -61,37 +80,73 @@ const resetConfirm = document.getElementById('reset-confirm');
 const resetYes = document.getElementById('reset-yes');
 const resetNo = document.getElementById('reset-no');
 const thresholdBtns = Array.from(document.querySelectorAll('.threshold-btn'));
+const collectionEl = document.getElementById('collection');
+const tierBanner = document.getElementById('tier-banner');
+const tierBannerNum = document.getElementById('tier-banner-num');
 
 // ---------------------------------------------------------------- art
 
 const OUTLINE = '#3A3126';
+const EGG_CREAM = '#F7F2BC';
+const EGG_GOLD = '#FFD84A';
 
-const EGG_SVG = `
+function eggSVG(golden) {
+  const fill = golden ? EGG_GOLD : EGG_CREAM;
+  const stars = golden ? `
+  <path class="twinkle" d="M20 24 l3 6 6 3 -6 3 -3 6 -3 -6 -6 -3 6 -3 z" fill="#FFFBE0"/>
+  <path class="twinkle t2" d="M38 42 l2.5 5 5 2.5 -5 2.5 -2.5 5 -2.5 -5 -5 -2.5 5 -2.5 z" fill="#FFFBE0"/>` : '';
+  return `
 <svg viewBox="0 0 60 74">
   <path d="M30 4C13 4 4 26 4 44a26 26 0 0 0 52 0C56 26 47 4 30 4Z"
-        fill="#F7F2BC" stroke="${OUTLINE}" stroke-width="5"/>
+        fill="${fill}" stroke="${OUTLINE}" stroke-width="5"/>
   <path class="crack" d="M16 40 l8 6 -6 7 9 5 -4 8"
         stroke="${OUTLINE}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  ${stars}
 </svg>`;
+}
 
-// a chick sitting inside the cracked bottom half of its egg
-const HATCHLING_SVG = `
-<svg viewBox="0 0 120 132">
-  <path d="M48 32 C46 18 60 14 63 26 C68 15 80 20 76 32 C67 27 56 27 48 32 Z"
-        fill="#DE3244" stroke="${OUTLINE}" stroke-width="4" stroke-linejoin="round"/>
-  <circle cx="60" cy="58" r="31" fill="#FFE23F" stroke="${OUTLINE}" stroke-width="5.5"/>
-  <path d="M33 54 L15 61 L34 68 Z" fill="#FFC93C" stroke="${OUTLINE}" stroke-width="4.5" stroke-linejoin="round"/>
-  <circle cx="45" cy="52" r="4.5" fill="${OUTLINE}"/>
-  <path d="M24 80 L36 68 L48 80 L60 68 L72 80 L84 68 L96 80 A36 34 0 0 1 24 80 Z"
-        fill="#F7F2BC" stroke="${OUTLINE}" stroke-width="5" stroke-linejoin="round"/>
+// a little chick of its own: round body, tiny comb, wing that can flap
+function chickSVG(color) {
+  return `
+<svg viewBox="0 0 100 112">
+  <g class="chick-legs" stroke="${OUTLINE}" stroke-width="4.5" stroke-linecap="round" fill="none">
+    <path d="M42 78 L38 97 M38 97 l-8 6 M38 97 l7 8"/>
+    <path d="M60 78 L64 97 M64 97 l-7 8 M64 97 l8 6"/>
+  </g>
+  <circle cx="50" cy="50" r="30" fill="${color}" stroke="${OUTLINE}" stroke-width="5"/>
+  <path d="M40 24 C39 14 50 12 52 20 C56 12 65 16 62 25 C55 21 47 21 40 24 Z"
+        fill="#DE3244" stroke="${OUTLINE}" stroke-width="3.5" stroke-linejoin="round"/>
+  <path d="M24 46 L8 52 L25 59 Z" fill="#FFC93C" stroke="${OUTLINE}" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="36" cy="44" r="4" fill="${OUTLINE}"/>
+  <path class="chick-wing" d="M62 44
+    a10 10 0 0 1 18 6
+    a10 10 0 0 1 4 16
+    a10 10 0 0 1 -15 10
+    q-11 -6 -12 -17
+    q-1 -10 5 -15 z"
+    fill="${color}" stroke="${OUTLINE}" stroke-width="4" stroke-linejoin="round"/>
 </svg>`;
+}
+
+// the cracked bottom half of the egg, left behind when the chick leaps out
+function shellBottomSVG(golden) {
+  const fill = golden ? EGG_GOLD : EGG_CREAM;
+  return `
+<svg viewBox="0 0 96 62">
+  <path d="M8 24 L20 12 L32 24 L44 12 L56 24 L68 12 L80 24 A36 30 0 0 1 8 24 Z"
+        fill="${fill}" stroke="${OUTLINE}" stroke-width="5" stroke-linejoin="round"/>
+</svg>`;
+}
 
 // the empty top of the shell, flung off as the egg opens
-const SHELL_TOP_SVG = `
+function shellTopSVG(golden) {
+  const fill = golden ? EGG_GOLD : EGG_CREAM;
+  return `
 <svg viewBox="0 0 70 62">
   <path d="M10 42 L20 28 L30 42 L40 28 L50 42 A20 18 0 0 1 10 42 Z"
-        fill="#F7F2BC" stroke="${OUTLINE}" stroke-width="5" stroke-linejoin="round"/>
+        fill="${fill}" stroke="${OUTLINE}" stroke-width="5" stroke-linejoin="round"/>
 </svg>`;
+}
 
 // ---------------------------------------------------------------- audio
 
@@ -164,6 +219,15 @@ const AudioFX = {
     this.tone(1500, 2100, 0.07, 'sine', 0.2, 0);
     this.tone(1900, 1350, 0.09, 'sine', 0.16, 0.1);
   },
+  peep() {  // one tiny chirp for the peep-jumps
+    this.tone(1700 + Math.random() * 400, 2200, 0.06, 'sine', 0.12, 0);
+  },
+  fanfare() { // milestone!
+    this.tone(523, 523, 0.09, 'triangle', 0.2, 0);
+    this.tone(659, 659, 0.09, 'triangle', 0.2, 0.1);
+    this.tone(784, 784, 0.09, 'triangle', 0.2, 0.2);
+    this.tone(1047, 1047, 0.22, 'triangle', 0.24, 0.3);
+  },
 };
 
 // ---------------------------------------------------------------- hud
@@ -177,6 +241,48 @@ function bumpPill(pill) {
   pill.classList.remove('bump');
   void pill.offsetWidth; // restart the animation
   pill.classList.add('bump');
+}
+
+// ---------------------------------------------------------------- tiers
+
+function buildCollection() {
+  TIERS.forEach((tier) => {
+    const slot = document.createElement('div');
+    slot.className = 'tier-slot';
+    slot.dataset.n = String(tier.n);
+    slot.innerHTML = chickSVG(tier.color);
+    collectionEl.appendChild(slot);
+  });
+}
+
+function refreshCollection() {
+  Array.from(collectionEl.children).forEach((slot) => {
+    slot.classList.toggle('earned', state.earnedTiers.has(parseInt(slot.dataset.n, 10)));
+  });
+}
+
+function showTierBanner(tier, gen) {
+  tierBanner.style.color = tier.color;
+  tierBanner.style.borderColor = tier.color;
+  tierBannerNum.textContent = tier.n + '!';
+  tierBanner.hidden = false;
+  tierBanner.classList.remove('show', 'hide');
+  void tierBanner.offsetWidth;
+  tierBanner.classList.add('show');
+  setTimeout(() => {
+    if (gen !== state.generation) return;
+    tierBanner.classList.add('hide');
+    setTimeout(() => { tierBanner.hidden = true; }, 550);
+  }, 2600);
+}
+
+function celebrateTier(tier, x, y, gen) {
+  state.earnedTiers.add(tier.n);
+  refreshCollection();
+  showTierBanner(tier, gen);
+  spawnSparks(x, y, tier.color);
+  spawnSparks(x, y, '#FFFFFF');
+  AudioFX.fanfare();
 }
 
 // ---------------------------------------------------------------- gameplay
@@ -205,6 +311,10 @@ function layEgg() {
   state.totalEggsLaid += 1;
   state.eggsInCurrentBatch += 1;
 
+  // Every egg hatches in lay order, so egg #N is hatch #N: if this egg
+  // is a milestone, it is laid golden and will hatch the tier chick.
+  const tier = TIERS.find((t) => t.n === state.totalEggsLaid);
+
   chickenEl.classList.remove('lay');
   void chickenEl.offsetWidth;
   chickenEl.classList.add('lay');
@@ -212,8 +322,9 @@ function layEgg() {
 
   // The egg appears just under where the chicken is right now...
   const egg = document.createElement('div');
-  egg.className = 'egg pop';
-  egg.innerHTML = EGG_SVG;
+  egg.className = 'egg pop' + (tier ? ' golden' : '');
+  egg.innerHTML = eggSVG(!!tier);
+  if (tier) egg.dataset.tier = String(tier.n);
   egg.style.left = state.chickenX + '%';
   egg.style.top = Math.min(state.chickenY + 9, 92) + '%';
   egg.style.transform = 'translate(-50%, -50%) rotate(' + (Math.random() * 20 - 10).toFixed(1) + 'deg)';
@@ -247,42 +358,95 @@ function hatchBatch(eggs, gen) {
         AudioFX.crack();
         setTimeout(() => {
           if (gen !== state.generation) return;
-          const x = parseFloat(egg.style.left);
-          const y = parseFloat(egg.style.top);
-          egg.remove();
-          spawnSparks(x, y);
-          spawnShellTop(x, y);
-          spawnHatchling(x, y, gen);
-          state.totalChicksHatched += 1;
-          AudioFX.cheep();
-          updateHud();
-          bumpPill(chickPill);
+          openEgg(egg, gen);
         }, 320);
       }, 620);
     }, i * CONFIG.hatchStaggerMs);
   });
 }
 
-// A chick pops up sitting in its cracked shell, bounces, then fades away.
-function spawnHatchling(x, y, gen) {
-  const chick = document.createElement('div');
-  chick.className = 'hatchling pop bounce';
-  chick.innerHTML = HATCHLING_SVG;
-  chick.style.left = x + '%';
-  chick.style.top = y + '%';
-  chickLayer.appendChild(chick);
+// The egg opens: shell top flies off, the chick sits in the bottom shell
+// for a beat, then leaps out and peep-jumps off the stage.
+function openEgg(egg, gen) {
+  const x = parseFloat(egg.style.left);
+  const y = parseFloat(egg.style.top);
+  const tierN = egg.dataset.tier ? parseInt(egg.dataset.tier, 10) : null;
+  const tier = tierN ? TIERS.find((t) => t.n === tierN) : null;
+  egg.remove();
 
-  setTimeout(() => {
-    if (gen !== state.generation) { chick.remove(); return; }
-    chick.classList.add('fade');
-    setTimeout(() => chick.remove(), 550);
-  }, CONFIG.hatchlingStayMs);
+  spawnSparks(x, y, tier ? tier.color : '#FFF6C9');
+  spawnShellTop(x, y, !!tier);
+  spawnChick(x, y, tier, gen);
+
+  state.totalChicksHatched += 1;
+  AudioFX.cheep();
+  updateHud();
+  bumpPill(chickPill);
+
+  if (tier) celebrateTier(tier, x, y, gen);
 }
 
-function spawnShellTop(x, y) {
+function spawnChick(x, y, tier, gen) {
+  const color = tier ? tier.color : '#FFE23F';
+
+  // chick first, shell after — the shell paints over the chick's bottom
+  const chick = document.createElement('div');
+  chick.className = 'chick-out pop sitting' + (tier ? ' glow' : '');
+  chick.innerHTML = chickSVG(color);
+  chick.style.left = x + '%';
+  chick.style.top = (y - 1.5) + '%';
+  if (tier) chick.style.setProperty('--glow', tier.color);
+  chickLayer.appendChild(chick);
+
+  const shell = document.createElement('div');
+  shell.className = 'shell-bottom';
+  shell.innerHTML = shellBottomSVG(!!tier);
+  shell.style.left = x + '%';
+  shell.style.top = (y + 2.5) + '%';
+  chickLayer.appendChild(shell);
+
+  // 1) sit in the shell for a beat...
+  setTimeout(() => {
+    if (gen !== state.generation) { chick.remove(); shell.remove(); return; }
+
+    // 2) ...leap out and land beside the shell (shell fades away)...
+    const exitRight = x < 50 ? false : true; // head for the nearest edge
+    const landX = x + (exitRight ? 7 : -7);
+    chick.classList.remove('sitting');
+    chick.classList.add('leap');
+    if (exitRight) chick.classList.add('face-right');
+    chick.style.left = landX + '%';
+    chick.style.top = (y + 1.5) + '%';
+    AudioFX.peep();
+
+    shell.classList.add('fade');
+    setTimeout(() => shell.remove(), 550);
+
+    // 3) ...then peep-jump off the stage, flapping its little wings.
+    setTimeout(() => {
+      if (gen !== state.generation) { chick.remove(); return; }
+      const exitX = exitRight ? 112 : -12;
+      const dist = Math.abs(exitX - landX);
+      const ms = Math.max(2000, dist * CONFIG.journeyMsPerPct);
+      chick.classList.remove('leap');
+      chick.classList.add('journey');
+      chick.style.transition = 'left ' + ms + 'ms linear, top ' + ms + 'ms linear';
+      requestAnimationFrame(() => { chick.style.left = exitX + '%'; });
+
+      // tiny peeps along the way
+      [700, 1600, 2600].forEach((t) => {
+        if (t < ms) setTimeout(() => { if (gen === state.generation) AudioFX.peep(); }, t);
+      });
+
+      setTimeout(() => chick.remove(), ms + 400);
+    }, 430);
+  }, CONFIG.sitInShellMs);
+}
+
+function spawnShellTop(x, y, golden) {
   const shell = document.createElement('div');
   shell.className = 'shell-top';
-  shell.innerHTML = SHELL_TOP_SVG;
+  shell.innerHTML = shellTopSVG(golden);
   shell.style.left = x + '%';
   shell.style.top = y + '%';
   const dir = Math.random() < 0.5 ? -1 : 1;
@@ -292,13 +456,14 @@ function spawnShellTop(x, y) {
   setTimeout(() => shell.remove(), 750);
 }
 
-function spawnSparks(x, y) {
+function spawnSparks(x, y, color) {
   for (let i = 0; i < 6; i++) {
     const s = document.createElement('span');
     s.className = 'spark';
     s.style.left = x + '%';
     s.style.top = y + '%';
-    const angle = (i / 6) * Math.PI * 2;
+    if (color) s.style.borderColor = color;
+    const angle = (i / 6) * Math.PI * 2 + Math.random() * 0.5;
     s.style.setProperty('--dx', (Math.cos(angle) * (28 + Math.random() * 20)) + 'px');
     s.style.setProperty('--dy', (Math.sin(angle) * (24 + Math.random() * 16) - 12) + 'px');
     fxLayer.appendChild(s);
@@ -312,9 +477,12 @@ function resetGame() {
   state.eggsInCurrentBatch = 0;
   state.totalChicksHatched = 0;
   state.batchEggs = [];
+  state.earnedTiers.clear();
   eggLayer.textContent = '';
   chickLayer.textContent = '';
   fxLayer.textContent = '';
+  tierBanner.hidden = true;
+  refreshCollection();
   updateHud();
 }
 
@@ -470,6 +638,7 @@ function scheduleIdleHop() {
 thresholdBtns.forEach((b) => {
   b.classList.toggle('active', parseInt(b.dataset.n, 10) === state.hatchThreshold);
 });
+buildCollection();
 updateHud();
 scheduleBlink();
 scheduleFlap();

@@ -49,6 +49,9 @@
   <div id="chick-layer" aria-hidden="true"></div>
   <div id="fx-layer" aria-hidden="true"></div>
 
+  <!-- milestone chick collection (filled in by game.js) -->
+  <div id="collection" aria-hidden="true"></div>
+
   <!-- counters (show-style pills, top-right) -->
   <div class="hud ui">
     <div class="pill" id="egg-pill" title="Eggs laid">
@@ -74,6 +77,14 @@
     <button id="gear-btn" type="button" aria-label="Grown-up settings">⚙️</button>
   </div>
 </main>
+
+<!-- milestone banner -->
+<div id="tier-banner" hidden>
+  <svg class="banner-star" viewBox="0 0 100 100" aria-hidden="true">
+    <path d="M50 5 L61 38 L96 38 L68 59 L79 92 L50 71 L21 92 L32 59 L4 38 L39 38 Z" fill="currentColor"/>
+  </svg>
+  <span id="tier-banner-num">10!</span>
+</div>
 
 <!-- start screen -->
 <div id="start-overlay">

@@ -101,13 +101,29 @@ body {
   width: clamp(38px, 8vmin, 68px);
   transform: translate(-50%, -50%);
 }
-.egg svg, .hatchling svg, .shell-top svg { display: block; width: 100%; height: auto; }
+.egg svg, .chick-out svg, .shell-bottom svg, .shell-top svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
 
 .egg.pop svg { animation: pop-in 0.32s ease-out; }
 .egg svg { transform-origin: 50% 100%; }
 .egg.wobble svg { animation: egg-wobble 0.62s ease-in-out; }
 .egg .crack { opacity: 0; }
 .egg.cracking .crack { opacity: 1; }
+
+/* milestone egg: golden, glowing, twinkling */
+.egg.golden { filter: drop-shadow(0 0 1.2vmin rgba(255, 216, 74, 0.95)); }
+.egg.golden .twinkle {
+  animation: twinkle 0.9s ease-in-out infinite alternate;
+}
+.egg.golden .t2 { animation-delay: 0.45s; }
+
+@keyframes twinkle {
+  from { opacity: 0.15; }
+  to   { opacity: 1; }
+}
 
 @keyframes pop-in {
   0%   { transform: scale(0.2); }
@@ -123,22 +139,50 @@ body {
   80% { transform: rotate(8deg); }
 }
 
-/* a chick sitting in its cracked shell */
-.hatchling {
+/* a freshly hatched chick: sits in its shell, leaps out, peep-jumps away */
+.chick-out {
   position: absolute;
-  width: clamp(52px, 11vmin, 92px);
+  width: clamp(44px, 9vmin, 78px);
+  transform: translate(-50%, -50%);
+  transition: left 0.4s cubic-bezier(0.3, 1.2, 0.5, 1), top 0.4s cubic-bezier(0.3, 1.2, 0.5, 1);
+}
+.chick-out.face-right { transform: translate(-50%, -50%) scaleX(-1); }
+.chick-out svg { transform-origin: 50% 78%; }
+.chick-out.pop svg { animation: pop-in 0.32s ease-out; }
+.chick-out.glow { filter: drop-shadow(0 0 1.2vmin var(--glow, #fff)); }
+
+/* while sitting in the shell, tuck the legs away */
+.chick-out.sitting .chick-legs { opacity: 0; }
+
+.chick-out.leap svg { animation: leap 0.42s ease-out; }
+
+@keyframes leap {
+  0%   { transform: translateY(0) scale(1.12, 0.82); }
+  50%  { transform: translateY(-75%) scale(0.9, 1.14); }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+
+/* tiny peep-jumps all the way off the stage, wings flapping */
+.chick-out.journey svg { animation: peep-hop 0.42s ease-in-out infinite; }
+.chick-out.journey .chick-wing {
+  transform-box: fill-box;
+  transform-origin: 20% 15%;
+  animation: flap 0.45s ease-in-out infinite;
+}
+
+@keyframes peep-hop {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  30%  { transform: translateY(-26%) scale(0.94, 1.08); }
+  60%  { transform: translateY(0) scale(1.07, 0.92); }
+}
+
+/* the cracked bottom shell, left behind and fading out */
+.shell-bottom {
+  position: absolute;
+  width: clamp(40px, 8.5vmin, 72px);
   transform: translate(-50%, -50%);
 }
-.hatchling svg { transform-origin: 50% 90%; }
-.hatchling.pop svg { animation: pop-in 0.32s ease-out; }
-.hatchling.bounce svg { animation: chick-bounce 0.9s ease-in-out 0.35s 2; }
-.hatchling.fade { animation: fade-away 0.5s ease-out forwards; }
-
-@keyframes chick-bounce {
-  0%, 100% { transform: scale(1, 1); }
-  30% { transform: scale(1.05, 0.92); }
-  65% { transform: scale(0.96, 1.06); }
-}
+.shell-bottom.fade { animation: fade-away 0.5s ease-out forwards; }
 
 @keyframes fade-away {
   from { opacity: 1; }
@@ -176,6 +220,82 @@ body {
     transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.1);
     opacity: 0;
   }
+}
+
+/* ---------- milestone banner ---------- */
+
+#tier-banner {
+  position: fixed;
+  top: 28%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.18em 0.7em;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 0.7vmin solid currentColor;
+  font-size: clamp(38px, 10vmin, 88px);
+  font-weight: 700;
+  pointer-events: none;
+}
+#tier-banner .banner-star {
+  width: 1.05em;
+  height: 1.05em;
+  animation: star-spin 2.6s ease-in-out infinite;
+}
+#tier-banner.show { animation: banner-pop 0.5s cubic-bezier(0.3, 1.4, 0.5, 1); }
+#tier-banner.hide { animation: fade-away 0.5s ease-out forwards; }
+
+@keyframes banner-pop {
+  0%   { transform: translate(-50%, -50%) scale(0); }
+  70%  { transform: translate(-50%, -50%) scale(1.15); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes star-spin {
+  0%, 100% { transform: rotate(-12deg); }
+  50%      { transform: rotate(12deg); }
+}
+
+/* ---------- tier collection (left side) ---------- */
+
+#collection {
+  position: absolute;
+  left: max(2vmin, env(safe-area-inset-left));
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 1.4vmin;
+  z-index: 9;
+  pointer-events: none;
+}
+
+.tier-slot {
+  width: clamp(34px, 7vmin, 56px);
+  height: clamp(34px, 7vmin, 56px);
+  border-radius: 50%;
+  border: 0.45vmin dashed rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.12);
+  display: grid;
+  place-items: center;
+}
+.tier-slot svg {
+  width: 76%;
+  height: auto;
+  opacity: 0;
+}
+.tier-slot.earned {
+  border-style: solid;
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.28);
+}
+.tier-slot.earned svg {
+  opacity: 1;
+  animation: pop-in 0.35s ease-out;
 }
 
 /* ---------- HUD counters (show-style: blue pills, big white digits, top-right) ---------- */
