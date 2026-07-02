@@ -1,3 +1,0 @@
-[2026-07-02T15:20:44.152Z] GET http://localhost:8090/happy-chicken.html?hatch=2 → 200 (9ms, 5203B)
-[2026-07-02T15:20:44.171Z] GET http://localhost:8090/style.css → 200 (?ms, 11309B)
-[2026-07-02T15:20:44.171Z] GET http://localhost:8090/game.js → 200 (4ms, 22458B)
